@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.21)
 include(FetchContent)
-project (aoc2023)
+project (aoc2016)
 
 function(dump_cmake_variables)
     get_cmake_property(_variableNames VARIABLES)
@@ -39,7 +39,7 @@ FetchContent_Declare( ctre
     )
 FetchContent_MakeAvailable(ctre)
 # uncomment when/if necessary!
-#find_package(Boost 1.83 REQUIRED)
+#find_package(Boost 1.88 REQUIRED)
 find_package(z3 QUIET)
 if(z3_FOUND)
     add_compile_definitions(USE_Z3)
