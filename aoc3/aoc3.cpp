@@ -13,31 +13,32 @@
 
 using tri_t = std::array<int, 3>;
 
-void sort_tri(tri_t& tt)
+void sort_tri(int& a, int& b, int& c)
 {
-	if(tt[0] > tt[1])
-		std::swap(tt[0], tt[1]);
-	if(tt[1] > tt[2])
-		std::swap(tt[1], tt[2]);
-	if(tt[0] > tt[1])
-		std::swap(tt[0], tt[1]);
+	if(a > b)
+		std::swap(a, b);
+	if(b > c)
+		std::swap(b, c);
+	if(a > b)
+		std::swap(a, b);
 }
 
-bool tri_good(tri_t tt)
+bool tri_good(int a, int b, int c)
 {
-	sort_tri(tt);
-	return tt[2] < tt[0] + tt[1];
+	sort_tri(a, b, c);
+	return c < a + b;
 }
 
 auto get_input()
 {
-	std::vector<tri_t> r;
+	std::vector<int> r;
 	std::string ln;
 	while(std::getline(std::cin, ln))
 		if(auto[m, a, b, c] = ctre::match<"[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)">(ln); m)
 		{
-			tri_t tt{a.to_number<int>(), b.to_number<int>(), c.to_number<int>()};
-			r.emplace_back(tt);
+			r.emplace_back(a.to_number<int>());
+			r.emplace_back(b.to_number<int>());
+			r.emplace_back(c.to_number<int>());
 		}
 	return r;
 }
@@ -45,13 +46,23 @@ auto get_input()
 int pt1(auto const& in)
 {
 	timer t("p1");
-	return std::ranges::count_if(in, tri_good);
+	int r = 0;
+	for(auto i = in.begin(); i != in.end(); i += 3)
+		r += tri_good(*i, *(i + 1), *(i + 2));
+	return r;
 }
 
 int pt2(auto const& in)
 {
 	timer t("p2");
-	return 0;
+	int r = 0;
+	for(auto i = in.begin(); i != in.end(); i += 9)
+	{
+		r += tri_good(*i, *(i + 3), *(i + 6));
+		r += tri_good(*(i + 1), *(i + 4), *(i + 7));
+		r += tri_good(*(i + 2), *(i + 5), *(i + 8));
+	}
+	return r;
 }
 
 int main()
