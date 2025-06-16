@@ -6,24 +6,71 @@
 
 #include <fmt/format.h>
 
-//#include "ctre.hpp"
+#include "ctre.hpp"
 #include "timer.h"
 
 auto get_input()
 {
-	return 0;
+	std::string ln;
+	std::getline(std::cin, ln);
+	return ln;
 }
 
-int64_t pt1(auto const& in_addr_t)
+size_t decompress(std::string_view in)
+{
+	size_t sz = 0;
+	while(1)
+	{
+		if(auto[mtch, len, cnt] = ctre::search<"\\((\\d+)x(\\d+)\\)">(in); mtch)
+		{
+			auto tmp = mtch.view().begin() - in.begin();
+			sz += tmp;
+			in.remove_prefix(tmp);
+			int chars = len.to_number<int>();
+			int times = cnt.to_number<int>();
+			sz += chars * times;
+			in.remove_prefix(mtch.view().size() + chars);
+		}
+		else
+			break;
+	}
+	sz += in.size();
+	return sz;
+}
+
+size_t decompress2(std::string_view in)
+{
+	size_t sz = 0;
+	while(1)
+	{
+		if(auto[mtch, len, cnt] = ctre::search<"\\((\\d+)x(\\d+)\\)">(in); mtch)
+		{
+			auto tmp = mtch.view().begin() - in.begin();
+			sz += tmp;
+			in.remove_prefix(tmp);
+			int chars = len.to_number<int>();
+			int times = cnt.to_number<int>();
+			std::string_view vt(mtch.view().end(), mtch.view().end() + chars);
+			sz += decompress2(vt) * times;
+			in.remove_prefix(mtch.view().size() + chars);
+		}
+		else
+			break;
+	}
+	sz += in.size();
+	return sz;
+}
+
+auto pt1(auto const& in)
 {
 	timer t("p1");
-	return 0;
+	return decompress(in);
 }
 
-int64_t pt2(auto const& in)
+auto pt2(auto const& in)
 {
 	timer t("p2");
-	return 0;
+	return decompress2(in);
 }
 
 int main()
