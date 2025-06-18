@@ -10,15 +10,33 @@
 #include "ctre.hpp"
 #include "timer.h"
 
+const unsigned invalid_chip = unsigned(-1);
+const unsigned out_flag = 0x80000000;
+
+bool is_out(unsigned n)
+{
+	return n & out_flag;
+}
+
+unsigned set_out(unsigned n)
+{
+	return n | 	out_flag;
+}
+
+unsigned get_out(unsigned n)
+{
+	return n & ~out_flag;
+}
+
 struct bot
 {
 	unsigned low_;
 	unsigned high_;
-	unsigned chipA_ = -1;
-	unsigned chipB_ = -1;
+	unsigned chipA_ = invalid_chip;
+	unsigned chipB_ = invalid_chip;
 	void set(int v)
 	{
-		if(chipA_ == -1)
+		if(chipA_ == invalid_chip)
 			chipA_ = v;
 		else
 			chipB_ = v;
@@ -56,10 +74,10 @@ auto get_input()
 			auto& bt = get_T(bots, b.to_number<unsigned>());	
 			bt.low_ = l.to_number<unsigned>();
 			if(lbo.view()[0] != 'b')
-				bt.low_ |= 0x80000000;
+				bt.low_ = set_out(bt.low_);
 			bt.high_ = h.to_number<unsigned>();
 			if(hbo.view()[0] != 'b')
-				bt.high_ |= 0x80000000;
+				bt.high_ = set_out(bt.high_);
 		}
 		else
 			fmt::println("parse fail : {}", ln);
@@ -75,9 +93,9 @@ std::vector<int> topo_sort(bots_t const& b)
 	std::ranges::transform(b, flgs.begin(), [](auto const& g)
 		{
 			int u = 1;
-			if(g.chipA_ != -1)
+			if(g.chipA_ != invalid_chip)
 				++u;
-			if(g.chipB_ != -1)
+			if(g.chipB_ != invalid_chip)
 				++u;
 			return u;
 		});
@@ -89,9 +107,9 @@ std::vector<int> topo_sort(bots_t const& b)
 			{
 				o.push_back(n);
 				flgs[n] = 0;
-				if((b[n].low_ & 0x80000000) == 0)
+				if(!is_out(b[n].low_))
 					++flgs[b[n].low_];
-				if((b[n].high_ & 0x80000000) == 0)
+				if(!is_out(b[n].high_))
 					++flgs[b[n].high_];
 			}
 		}
@@ -104,17 +122,18 @@ auto execute(bots_t& b, std::vector<int> const& order)
 	std::vector<unsigned> outs;
 	for(auto k : order)
 	{
-		b[k].sort();
-		if(b[k].low_ & 0x80000000)
+		bot& br = b[k];
+		br.sort();
+		if(is_out(br.low_))
 		{
-			unsigned& on = get_T(outs, b[k].low_ & 0x7fffffff);
+			unsigned& on = get_T(outs, get_out(br.low_));
 			on = b[k].chipA_;
 		}
 		else
 			b[b[k].low_].set(b[k].chipA_);
-		if(b[k].high_ & 0x80000000)
+		if(is_out(b[k].high_ ))
 		{
-			unsigned& on = get_T(outs, b[k].high_ & 0x7fffffff);
+			unsigned& on = get_T(outs, get_out(b[k].high_));
 			on = b[k].chipB_;
 		}
 		else
