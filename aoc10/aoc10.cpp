@@ -12,10 +12,10 @@
 
 struct bot
 {
-	int low_;
-	int high_;
-	int chipA_ = -1;
-	int chipB_ = -1;
+	unsigned low_;
+	unsigned high_;
+	unsigned chipA_ = -1;
+	unsigned chipB_ = -1;
 	void set(int v)
 	{
 		if(chipA_ == -1)
@@ -48,24 +48,18 @@ auto get_input()
 		if(auto[m, v, b] = ctre::match<"value (\\d+) goes to bot (\\d+)">(ln); m)
 		{
 			auto& bt = get_T(bots, b.to_number<int>());	
-			bt.set(v.to_number<int>());
+			bt.set(v.to_number<unsigned>());
 		}
 		else
 		if(auto[m, b, lbo, l, hbo, h] = ctre::match<"bot (\\d+) gives low to (bot|output) (\\d+) and high to (bot|output) (\\d+)">(ln); m)
 		{
-			auto& bt = get_T(bots, b.to_number<int>());	
-			bt.low_ = l.to_number<int>();
+			auto& bt = get_T(bots, b.to_number<unsigned>());	
+			bt.low_ = l.to_number<unsigned>();
 			if(lbo.view()[0] != 'b')
-			{
-				bt.low_ *= -1;
-				--bt.low_ ;
-			}
-			bt.high_ = h.to_number<int>();
+				bt.low_ |= 0x80000000;
+			bt.high_ = h.to_number<unsigned>();
 			if(hbo.view()[0] != 'b')
-			{
-				bt.high_ *= -1;
-				--bt.high_;
-			}
+				bt.high_ |= 0x80000000;
 		}
 		else
 			fmt::println("parse fail : {}", ln);
@@ -77,73 +71,68 @@ std::vector<int> topo_sort(bots_t const& b)
 {
 	std::vector<int> o;
 	o.reserve(b.size());
-	std::vector<uint8_t> flgs (b.size(), 1);
+	std::vector<int> flgs (b.size());
 	std::ranges::transform(b, flgs.begin(), [](auto const& g)
 		{
-			uint8_t u = 1;
-			if(g.chipA_ >= 0)
+			int u = 1;
+			if(g.chipA_ != -1)
 				++u;
-			if(g.chipB_ >= 0)
+			if(g.chipB_ != -1)
 				++u;
 			return u;
 		});
-	int cnt = 1;
-	while(cnt)
+	while(!std::ranges::all_of(flgs, [](auto f){ return f == 0;} ))
 	{
-		cnt = 0;
 		for(int n = 0; n < b.size(); ++n)
 		{
-			if(flgs[n] == 0x03) // inputs satisfied
+			if(flgs[n] == 3) // inputs satisfied
 			{
 				o.push_back(n);
 				flgs[n] = 0;
-				++flgs[b[n].low_];
-				++flgs[b[n].high_];
-				++cnt;
+				if((b[n].low_ & 0x80000000) == 0)
+					++flgs[b[n].low_];
+				if((b[n].high_ & 0x80000000) == 0)
+					++flgs[b[n].high_];
 			}
 		}
 	}
 	return o;
 }
 
-std::vector<int> execute(bots_t& b, std::vector<int> const& order)
+auto execute(bots_t& b, std::vector<int> const& order)
 {
-	std::vector<int> outs;
+	std::vector<unsigned> outs;
 	for(auto k : order)
 	{
 		b[k].sort();
-		if(b[k].low_ < 0)
+		if(b[k].low_ & 0x80000000)
 		{
-			int& on = get_T(outs, b[k].low_ * -1);
+			unsigned& on = get_T(outs, b[k].low_ & 0x7fffffff);
 			on = b[k].chipA_;
 		}
 		else
-		{
 			b[b[k].low_].set(b[k].chipA_);
-		}
-		if(b[k].high_ < 0)
+		if(b[k].high_ & 0x80000000)
 		{
-			int& on = get_T(outs, b[k].high_ * -1);
+			unsigned& on = get_T(outs, b[k].high_ & 0x7fffffff);
 			on = b[k].chipB_;
 		}
 		else
-		{
 			b[b[k].high_].set(b[k].chipB_);
-		}
 	}
 	return outs;
 }
 
 auto pt12(auto& in)
 {
-	timer t("p1");
+	timer t("p12");
 	auto order = topo_sort(in);
 	auto outs = execute(in, order);
-	for(int n = 0; n < in.size(); ++n)
+	for(unsigned n = 0; n < in.size(); ++n)
 		if( in[n].chipA_ == 17 && in[n].chipB_ == 61)
-			return std::make_pair(n, outs[1] * outs[2] * outs[3]);
+			return std::make_pair(n, outs[0] * outs[1] * outs[2]);
 
-	return std::make_pair(0, 0);
+	return std::make_pair(0U, 0U);
 }
 
 int main()
