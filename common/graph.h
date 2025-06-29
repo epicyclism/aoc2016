@@ -383,3 +383,40 @@ public:
         return data_;
     }
 };
+
+// grid with no preconceived data...
+//
+template<typename V> class grid_virtual
+{
+private:
+    const size_t stride_;
+    const V vp_;
+public:
+    grid_virtual(size_t s, V vp) : stride_{ s }, vp_{ vp }
+    {}
+    std::vector<vertex_id_t> operator[](vertex_id_t v) const
+    {
+        std::vector<vertex_id_t> rv;
+        // left
+        if (v % stride_ != 0 && vp_(v, v - 1))
+            rv.emplace_back(v - 1);
+        // right
+        if (v % stride_ != stride_ - 1 && vp_( v, v + 1))
+            rv.emplace_back(v + 1);
+        // up
+        if (v > stride_ && vp_(v, v - stride_))
+            rv.emplace_back(v - stride_);
+        // down
+        if ( vp_(v, v + stride_))
+            rv.emplace_back(v + stride_);
+        return rv;
+    }
+    size_t stride () const
+    {
+        return stride_;
+    }
+    size_t size() const
+    {
+        return stride_ * stride_;
+    }
+};

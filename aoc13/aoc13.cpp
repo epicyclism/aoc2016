@@ -1,36 +1,42 @@
 #include <iostream>
 #include <string>
-#include <algorithm>
-#include <numeric>
 #include <ranges>
 
 #include <fmt/format.h>
+#include <bit>
 
 #include "ctre_inc.h"
+#include "graph.h"
 #include "timer.h"
 
-auto get_input()
+bool is_wall(unsigned x, unsigned y, unsigned special)
 {
-	return 0;
+	return std::popcount(
+		x * x +
+		3 * x + 
+		2 * x * y +
+		y +
+		y * y +
+		special
+	) & 1;
 }
 
-int64_t pt1(auto const& in_addr_t)
+std::pair<int, int> pt12(auto in)
 {
 	timer t("p1");
-	return 0;
+	const int stride = 64;
+	grid_virtual g(stride, [=](auto f, auto t){ return !is_wall(t % stride, t / stride, in);});
+	auto rv = bfs(g, stride + 1);
+	return {rv[31 + 39 * stride],
+		std::ranges::count_if(rv, [](auto d){ return d != -1 && d < 51;})};
 }
 
-int64_t pt2(auto const& in)
+int main(int ac, char ** av)
 {
-	timer t("p2");
-	return 0;
-}
-
-int main()
-{
-	auto in = get_input();
-	auto p1 = pt1(in);
-	auto p2 = pt2(in);
+	int in = 1362;
+	if(ac > 1)
+		in = sv_to_t<int>(std::string_view(av[1]));
+	auto[ p1, p2] = pt12(in);
 	fmt::println("pt1 = {}", p1);
 	fmt::println("pt2 = {}", p2);
 }
