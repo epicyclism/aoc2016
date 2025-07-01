@@ -6,29 +6,61 @@
 
 #include <fmt/format.h>
 
-#include "ctre_inc.h"
 #include "timer.h"
 
-auto get_input()
+std::string dragon(std::string const& a)
 {
-	return 0;
+	std::string b (a);
+	std::ranges::reverse(b);;
+	std::ranges::transform(b, std::ranges::begin(b), [](auto c){ return c == '0' ? '1' : '0';});
+	return a + '0' + b;
 }
 
-int64_t pt1(auto const& in_addr_t)
+std::string chksm(std::string const& s)
+{
+	std::string tmp ;
+	std::string cs(s);
+	while(!(cs.size() & 1))
+	{
+		for(int i = 0; i < cs.size(); i +=2)
+			tmp.push_back(cs[i] == cs[i+1] ? '1':'0');
+		cs.swap(tmp);
+		tmp.clear();
+	}
+	return cs;
+}
+
+constexpr auto lent = 20;
+constexpr auto len1 = 272;
+constexpr auto len2 = 35651584;
+
+auto pt1(auto const& in)
 {
 	timer t("p1");
-	return 0;
+	std::string fill = in;
+	while(fill.size() < len1)
+		fill = dragon(fill);
+	fill.erase(len1);
+
+	return chksm(fill);
 }
 
-int64_t pt2(auto const& in)
+auto pt2(auto const& in)
 {
 	timer t("p2");
-	return 0;
+	std::string fill = in;
+	while(fill.size() < len2)
+		fill = dragon(fill);
+	fill.erase(len2);
+
+	return chksm(fill);
 }
 
-int main()
+int main(int ac, char **av)
 {
-	auto in = get_input();
+	std::string in = "10010000000110000";
+	if(ac > 1)
+		in = av[1];
 	auto p1 = pt1(in);
 	auto p2 = pt2(in);
 	fmt::println("pt1 = {}", p1);
