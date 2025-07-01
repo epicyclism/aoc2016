@@ -47,9 +47,24 @@ auto next_md5(std::string_view salt, unsigned n)
 	return to_hex(md5);
 }
 
+auto next_md5ex(std::string_view salt, unsigned n)
+{
+	md5_t md5;
+	std::string wsp(salt.begin(), salt.end());
+	wsp += std::to_string(n);
+	MD5(reinterpret_cast<unsigned char const*>(wsp.data()), wsp.size(), md5.data());
+	hash_t h;
+	for (int c = 0; c < 2016; ++c)
+	{
+		h = to_hex(md5);
+		MD5(reinterpret_cast<unsigned char const*>(h.data()), h.size(), md5.data());
+	}
+	return to_hex(md5);
+}
+
 char is_3(hash_t const& h)
 {
-	for(int n = 0; n < h.size() - 3; ++n)
+	for(int n = 0; n < h.size() - 2; ++n)
 		if(h[n] == h[n + 1] && h[n] == h[n + 2])
 			return h[n];
 
@@ -76,28 +91,35 @@ int pt1(auto const& in)
 	// preload
 	for( int i = 0; i < 1001; ++i)
 		vh.emplace_back(next_md5(in, i));
-	int index = 0;
+	int index = -1;
 	int cnt = 0;
-	while(1)
+	do
 	{
-		if(auto k = is_3(vh[index]); k != ' ')
-		{
-			cnt += scan_5(vh, index + 1, k);
-			if(cnt == 63)
-				break;
-		}
-		vh.emplace_back(next_md5(in, vh.size()));
 		++index;
-	}
+		if (auto k = is_3(vh[index]); k != ' ')
+			cnt += scan_5(vh, index + 1, k);
+		vh.emplace_back(next_md5(in, vh.size()));
+	} while (cnt < 64);
 	return index;
 }
-// 29847 too high
-// 25327 too low
 
 int pt2(auto const& in)
 {
 	timer t("p2");
-	return 0;
+	std::vector<hash_t> vh;
+	// preload
+	for (int i = 0; i < 1001; ++i)
+		vh.emplace_back(next_md5ex(in, i));
+	int index = -1;
+	int cnt = 0;
+	do
+	{
+		++index;
+		if (auto k = is_3(vh[index]); k != ' ')
+			cnt += scan_5(vh, index + 1, k);
+		vh.emplace_back(next_md5ex(in, vh.size()));
+	} while (cnt < 64);
+	return index;
 }
 
 int main(int ac, char ** av)
