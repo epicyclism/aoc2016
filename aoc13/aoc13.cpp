@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <ranges>
+#include <algorithm>
 
 #include <fmt/format.h>
 #include <bit>
