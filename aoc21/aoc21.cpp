@@ -28,14 +28,10 @@ void do_act(action const& a, std::string& s)
 	switch(a.act_)
 	{
 		case act::swap_pos:
-			std::swap(*(s.begin() + a.a_), *(s.begin() + a.b_));
+			std::iter_swap(s.begin() + a.a_, s.begin() + a.b_);
 			break;
 		case act::swap_letter:
-			{
-				auto X = s.find(a.a_);
-				auto Y = s.find(a.b_);
-				std::swap(*(s.begin() + X), *(s.begin() + Y));
-			}
+			std::iter_swap(s.begin() + s.find(a.a_), s.begin() + s.find(a.b_));
 			break;
 		case act::rotate_left:
 			std::rotate(s.begin(), s.begin() + a.a_, s.end());
@@ -44,10 +40,7 @@ void do_act(action const& a, std::string& s)
 			std::rotate(s.begin(), s.begin() + s.size() - a.a_, s.end());
 			break;
 		case act::rotate_pos:
-			{
-				auto r = s.find(a.a_);
-				std::rotate(s.begin(), s.begin() + s.size() - do_rotate[r], s.end());
-			}
+			std::rotate(s.begin(), s.begin() + s.size() - do_rotate[s.find(a.a_)], s.end());
 			break;
 		case act::reverse:
 			std::reverse(s.begin() + a.a_, s.begin() + a.b_ + 1);
@@ -67,14 +60,10 @@ void do_ract(action const& a, std::string& s)
 	switch(a.act_)
 	{
 		case act::swap_pos:
-			std::swap(*(s.begin() + a.a_), *(s.begin() + a.b_));
+			std::iter_swap(s.begin() + a.a_, s.begin() + a.b_);
 			break;
 		case act::swap_letter:
-			{
-				auto X = s.find(a.a_);
-				auto Y = s.find(a.b_);
-				std::swap(*(s.begin() + X), *(s.begin() + Y));
-			}
+			std::iter_swap(s.begin() + s.find(a.a_), s.begin() + s.find(a.b_));
 			break;
 		case act::rotate_left:
 			std::rotate(s.begin(), s.begin() + s.size() - a.a_, s.end());
@@ -83,10 +72,7 @@ void do_ract(action const& a, std::string& s)
 			std::rotate(s.begin(), s.begin() + a.a_, s.end());
 			break;
 		case act::rotate_pos:
-			{
-				auto r = s.find(a.a_);
-				std::rotate(s.begin(), s.begin() + undo_rotate[r], s.end());
-			}
+			std::rotate(s.begin(), s.begin() + undo_rotate[s.find(a.a_)], s.end());
 			break;
 		case act::reverse:
 			std::reverse(s.begin() + a.a_, s.begin() + a.b_ + 1);
@@ -139,7 +125,6 @@ std::string pt1(auto const& in)
 	std::string pw = "abcdefgh";
 	for(auto& x: in)
 		do_act(x, pw);
-
 	return pw;
 }
 

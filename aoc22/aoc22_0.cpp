@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <queue>
 #include <algorithm>
 #include <numeric>
 #include <ranges>
@@ -61,59 +60,73 @@ std::array<int, 4> adjacent(int stride, int size, int pos)
 		r[1] = pos + 1;
 	if( pos >= stride)
 		r[2] = pos - stride;
-	if( pos < size - stride)
+	if( pos < size - stride - 1)
 		r[3] = pos + stride;
 	return r;
 }
 
-// find the nearest node with space
-// return the number of steps and the node id.
-// id_not is a node id not to look at or pass through.
-auto bfs(auto const& vn, int stride, int id_from, int id_not, int amt) 
+void step(std::vector<node_r> v, std::vector<bool> visited, int stride, int pos, int steps, int& mn)
 {
-	std::vector<int>	distance(vn.size(), 0);
-    std::vector<bool>   visited(vn.size());
-	visited[id_not] = true;
-    std::queue<int> q;
-    q.push(id_from);
-    visited[id_from] = true;
-    while (!q.empty())
-    {
-        auto u = q.front(); q.pop();
-        for (auto e : adjacent(stride, vn.size(), u))
-        {
-            if (e != -1 && !visited[e])
-            {
-                visited[e] = true;
-				if(vn[e].used_ < 100) // arbitrary for the proper inputs to avoid considering nodes we cannot move from.
+	fmt::println("step({}, {})", pos, steps);
+	if(steps > mn)
+		return;
+	if(pos == 0)
+	{
+		if( steps < mn)
+			mn = steps;
+		return;
+	}
+	auto a = adjacent(stride, v.size(), pos);
+	for(auto np: a)
+	{
+		if( np != -1 && !visited[np])
+		{
+			fmt::println("{} -> {} ({})", pos, np, v[np].sz_ - v[np].used_);
+			if(v[np].sz_ - v[np].used_ >= v[pos].used_)
+			{
+				fmt::println("{} -> {}", pos, np);
+				auto u = v[pos].used_;
+				v[np].used_ += u;
+				v[pos].used_ = 0;
+				visited[np] = true;
+				step(v, visited, stride, np, steps + 1, mn );
+				visited[np] = false;
+				v[pos].used_ = u;
+				v[np].used_ -= u;
+			}
+			else
+			{
+				// look for somewhere to move np's load to
+				auto a2 = adjacent(stride, v.size(), np);
+				for(auto np2: a2)
 				{
-					distance[e] = distance[u] + 1;
-					if( vn[e].sz_ - vn[e].used_ >= amt)
-						return std::make_pair(e, distance[e]);
-					q.push(e);
+					if( np2 == -1 || np2 == pos)
+						continue;
+					fmt::println("- {} -> {} ({})", np, np2, v[np2].sz_ - v[np2].used_);
+					if(v[np2].sz_ - v[np2].used_ >= v[np].used_)
+					{
+						auto u = v[np].used_;
+						v[np2].used_ += u;
+						v[np].used_ = 0;
+						step(v, visited, stride, pos, steps + 1, mn );
+						v[np2].used_ -= u;
+						v[np].used_ = u;		
+					}
 				}
-            }
-        }
-    }
-    return std::make_pair(-1, -1);
-} 
+			}
+		}
+	}
+}
 
-int pt2(auto const& vn0, int stride)
+int pt2(auto const& vn, int stride)
 {
 	timer t("p2");
-	auto vn = vn0;
-	int steps = 0;
-
-	for(int x = stride - 2; x >= 0; --x)
-	{
-		++steps;
-		auto[n, s] = bfs(vn, stride, x, x + 1, vn[x + 1].used_);
-		steps += s;
-		vn[n].used_ = vn[x].used_;
-		vn[x].used_ = vn[x + 1].used_;
-		vn[x + 1].used_ = 0;
-	}
-	return steps;
+	fmt::println("pt2({}, {})", vn.size(), stride);
+	int mn = std::numeric_limits<int>::max();
+	std::vector<bool> visited(vn.size());
+	visited[stride - 1] = true;
+	step(vn, visited, stride, stride - 1, 0, mn);
+	return mn;
 }
 
 int main()
