@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <map>
+#include <queue>
 #include <string>
 #include <algorithm>
 #include <numeric>
@@ -202,33 +204,17 @@ auto get_input()
 	}
 	st.elevator_ = 0;
 
-	for(auto& n: st.names_)
-		fmt::println("{}", n);
-	fmt::println("generators {}, microchips {}", st.generators_.size(), st.microchips_.size());
+//	for(auto& n: st.names_)
+//		fmt::println("{}", n);
+//	fmt::println("generators {}, microchips {}", st.generators_.size(), st.microchips_.size());
 	return st;
 }
 
 using graph_t = std::vector<std::vector<uint32_t>>;
-void build_graph(graph_t& gt, state& st)
-{
-	auto vm = st.next_moves();
-	auto fm = st.encode();
-	if (vm.empty())
-		return;
-	for (auto ue : vm)
-		add_edge(gt, fm, ue);
-	for (auto ue : vm)
-	{
-		if(gt.size() < ue || gt[ue].size() == 0)
-		{
-			st.decode(ue);
-			build_graph(gt, st);
-		}
-	}
-}
 
 void build_graph2(graph_t& gt, state& st)
 {
+	timer t("build_graph");
 	for (uint32_t u = 0; u < st.max_state(); ++u)
 	{
 		st.decode(u);
@@ -240,7 +226,7 @@ void build_graph2(graph_t& gt, state& st)
 	}
 }
 
-int64_t pt1(auto in)
+int64_t pt1a(auto in)
 {
 	timer t("p1");
 	graph_t g;
@@ -253,7 +239,42 @@ int64_t pt1(auto in)
 	return dists.at(e);
 }
 
-int64_t pt2(auto in)
+int bfs_act(auto& s, auto f, auto e)
+{
+	std::queue<std::pair<uint32_t, int>> q;
+	std::vector<bool> visited(s.max_state());
+	visited[f] = true;
+	q.push(std::make_pair(f, 0));
+	while(!q.empty())
+	{
+		auto n = q.front();
+		q.pop();
+		if(n.first == e)
+			return n.second;
+		s.decode(n.first);
+		auto vm = s.next_moves();
+		for (auto ue : vm)
+		{
+			if(!visited[ue])
+			{
+				visited[ue] = true;
+				q.push(std::make_pair(ue, n.second + 1));
+			}
+		}
+	}
+	return -1;
+}
+
+int pt1(auto in)
+{
+	timer t("p1");
+	auto f = in.encode();
+	in.set_to_end();
+	auto e = in.encode();
+	return bfs_act(in, f, e);
+}
+
+int64_t pt2a(auto in)
 {
 	timer t("p2");
 	in.add_generator("dilithium", 0);
@@ -268,6 +289,19 @@ int64_t pt2(auto in)
 	fmt::println("vertex count - {}", g.size());
 	auto dists = bfs(g, f);
 	return dists.at(e);
+}
+
+int pt2(auto in)
+{
+	timer t("p2");
+	in.add_generator("dilithium", 0);
+	in.add_microchip("dilithium", 0);
+	in.add_generator("elerium", 0);
+	in.add_microchip("elerium", 0);
+	auto f = in.encode();
+	in.set_to_end();
+	auto e = in.encode();
+	return bfs_act(in, f, e);
 }
 
 int main()

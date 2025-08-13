@@ -53,12 +53,6 @@ auto pt12(auto const& in)
 	return std::make_pair(m1, m2);
 }
 
-int pt2(auto const& in)
-{
-	timer t("p2");
-	return 0;
-}
-
 int main()
 {
 	auto in = get_input();

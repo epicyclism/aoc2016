@@ -70,6 +70,7 @@ auto pt12(auto const& in)
 int main(int ac, char**av)
 {
 	std::string in = "ugkcyxxp";
+	std::string in2 = "ojbvtpuvg";
 	if(ac > 1)
 		in = av[1];
 	auto[p1, p2] = pt12(in);

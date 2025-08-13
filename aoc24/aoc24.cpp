@@ -83,7 +83,7 @@ auto pt12(auto const& in)
 {
 	timer t("p1");
 	std::vector<std::vector<int>> al(in.pts_.size());
-	grid_direct_border g (in.gd_, in.st_, [&](aauto t){return g.value(t) != '#';}); 
+	grid_direct_border g (in.gd_, in.st_, [&](auto t){return in.gd_[t] != '#';}); 
 	for(int spv = 0; spv < in.pts_.size(); ++spv)
 	{
 		auto d = bfs(g, in.pts_[spv]);
