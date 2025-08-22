@@ -23,7 +23,7 @@ bool is_wall(unsigned x, unsigned y, unsigned special)
 
 std::pair<int, int> pt12(auto in)
 {
-	timer t("p1");
+	timer t("p12");
 	const int stride = 64;
 	grid_virtual g(stride, [=](auto f, auto t){ return !is_wall(t % stride, t / stride, in);});
 	auto rv = bfs(g, stride + 1);

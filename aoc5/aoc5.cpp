@@ -41,7 +41,7 @@ char to_hex(unsigned x)
 
 auto pt12(auto const& in)
 {
-	timer t("p2");
+	timer t("p12");
 	std::string pw1="00000000";
 	std::string pw2="ffffffff";
 	unsigned nn = 0;

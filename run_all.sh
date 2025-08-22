@@ -2,17 +2,17 @@
 echo "day 1"
 build/aoc1/aoc1 < inputs/aoc1/input
 echo "day 2"
-build/aoc2/aoc2bb < inputs/aoc2/input
+build/aoc2/aoc2 < inputs/aoc2/input
 echo "day 3"
 build/aoc3/aoc3 < inputs/aoc3/input
 echo "day 4"
 build/aoc4/aoc4 < inputs/aoc4/input
 echo "day 5"
-build/aoc5/aoc5 < inputs/aoc5/input
+build/aoc5/aoc5 
 echo "day 6"
 build/aoc6/aoc6 < inputs/aoc6/input
 echo "day 7"
-build/aoc7/aoc7r < inputs/aoc7/input
+build/aoc7/aoc7 < inputs/aoc7/input
 echo "day 8"
 build/aoc8/aoc8 < inputs/aoc8/input
 echo "day 9"
@@ -24,19 +24,19 @@ build/aoc11/aoc11 < inputs/aoc11/input
 echo "day 12"
 build/aoc12/aoc12 < inputs/aoc12/input
 echo "day 13"
-build/aoc13/aoc13 < inputs/aoc13/input
+build/aoc13/aoc13
 echo "day 14"
-build/aoc14/aoc14 < inputs/aoc14/input
+build/aoc14/aoc14
 echo "day 15"
 build/aoc15/aoc15 < inputs/aoc15/input
 echo "day 16"
-build/aoc16/aoc16 < inputs/aoc16/input
+build/aoc16/aoc16
 echo "day 17"
-build/aoc17/aoc17 < inputs/aoc17/input
+build/aoc17/aoc17
 echo "day 18"
 build/aoc18/aoc18 < inputs/aoc18/input
 echo "day 19"
-build/aoc19/aoc19 < inputs/aoc19/input
+build/aoc19/aoc19
 echo "day 20"
 build/aoc20/aoc20 < inputs/aoc20/input
 echo "day 21"
